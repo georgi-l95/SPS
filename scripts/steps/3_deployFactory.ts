@@ -13,4 +13,4 @@ export async function deployFactory(deployer: any): Promise<UniswapV2Factory> {
   console.log("📄 Factory address:", factoryAddress);
   
   return factory;
-} 
+}

@@ -14,4 +14,4 @@ export async function deployWHBAR(deployer: any): Promise<WrappedHbar> {
   console.log("🔤 WHBAR symbol:", await whbar.symbol());
   
   return whbar;
-} 
+}

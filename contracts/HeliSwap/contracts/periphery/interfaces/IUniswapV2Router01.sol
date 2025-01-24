@@ -15,6 +15,7 @@ interface IUniswapV2Router01 {
         uint deadline
     ) external returns (uint amountA, uint amountB, uint liquidity);
     function addLiquidityHBAR(
+        address pair,
         address token,
         uint amountTokenDesired,
         uint amountTokenMin,

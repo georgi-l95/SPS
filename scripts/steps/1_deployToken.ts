@@ -13,5 +13,8 @@ export async function deployToken(deployer: any): Promise<MyToken> {
   console.log("📄 Token address:", tokenAddress);
   console.log("🔤 Token symbol:", await token.symbol());
   
+  const balance = await token.balanceOf(deployer.address);
+  console.log("💰 Deployer token balance:", ethers.formatUnits(balance));
+  
   return token;
-} 
+}

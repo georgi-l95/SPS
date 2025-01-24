@@ -9,7 +9,7 @@ contract MyToken is ERC20, Ownable {
         ERC20("USDC", "USDC") 
         Ownable(initialOwner)
     {
-        _mint(msg.sender, 100000000 * 10 ** decimals());
+        _mint(msg.sender, 1000 * 18 ** decimals());
     }
 
     function mint(address to, uint256 amount) public onlyOwner {

@@ -36,7 +36,7 @@ async function main() {
   );
   
   // Step 5: Create WHBAR-USDC pair
-  await createPair(
+  const pairAddress = await createPair(
     factory,
     whbarAddress,
     usdcAddress
@@ -46,7 +46,17 @@ async function main() {
   await verifySetup(usdc, factory, whbarAddress, usdcAddress, deployer);
   
   // Step 7: Add liquidity
-  await addLiquidity(usdc, router, usdcAddress, deployer);
+  await addLiquidity(usdc, router, usdcAddress, pairAddress, deployer);
+
+  // Step 8: Check pair balances
+  console.log("\n📊 Checking pair balances:");
+  const pair = await ethers.getContractAt("UniswapV2Pair", pairAddress);
+  const pairTokenBalance = await usdc.balanceOf(pairAddress);
+  const pairHBARBalance = await whbar.balanceOf(pairAddress);
+  
+  console.log("USDC in pair:", ethers.formatUnits(pairTokenBalance, 18));
+  console.log("WHBAR in pair:", ethers.formatUnits(pairHBARBalance, 18));
+
 }
 
 main()
@@ -54,4 +64,4 @@ main()
   .catch((error) => {
     console.error("❌ Error:", error);
     process.exit(1);
-  }); 
+  });

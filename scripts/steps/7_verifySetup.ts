@@ -24,4 +24,4 @@ export async function verifySetup(
   // Check HBAR balance
   const hbarBalance = await deployer.provider.getBalance(deployer.address);
   console.log("HBAR balance:", ethers.formatEther(hbarBalance));
-} 
+}

@@ -29,14 +29,8 @@ export async function createPair(factory: UniswapV2Factory, tokenA: string, toke
     console.log("Transaction hash:", tx.hash);
     console.log("⏳ Waiting for pair creation transaction...");
     
-    const receipt = await tx.wait();
-    if (receipt) {
-      console.log("\n📝 Transaction receipt:");
-      console.log("Status:", receipt.status);
-      console.log("Gas used:", receipt.gasUsed.toString());
-      console.log("Block number:", receipt.blockNumber);
-    }
-    
+    await tx.wait();
+
     // Verify pair was created
     const pairAddress = await factory.getPair(token0, token1);
     if (pairAddress === "0x0000000000000000000000000000000000000000") {
@@ -47,4 +41,4 @@ export async function createPair(factory: UniswapV2Factory, tokenA: string, toke
     console.log("📄 Pair address:", pairAddress);
     
     return pairAddress;
-} 
+}

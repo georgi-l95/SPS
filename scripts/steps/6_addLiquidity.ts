@@ -5,9 +5,9 @@ export async function addLiquidity(
   token: MyToken,
   router: UniswapV2Router02,
   tokenAddress: string,
+  pairAddress: string,
   deployer: any
 ) {
-  try {
     // Step 1: Check balances before operation
     const tokenBalance = await token.balanceOf(deployer.address);
     const hbarBalance = await deployer.provider.getBalance(deployer.address);
@@ -22,7 +22,8 @@ export async function addLiquidity(
     console.log("Initial router allowance:", ethers.formatUnits(initialAllowance, 18));
 
     // Using a smaller amount for testing
-    const amount = ethers.parseUnits("10", 18);
+    const amount = ethers.parseEther("100");
+    const amountHBAR = ethers.parseEther("1000");
     console.log("\n⏳ Approving tokens for router...");
     const approveTx = await token.approve(routerAddress, amount);
     await approveTx.wait();
@@ -42,38 +43,23 @@ export async function addLiquidity(
     const tenMinutesFromNow = Math.floor(Date.now() / 1000) + 600;
     console.log("\n⏳ Adding liquidity with parameters:");
     console.log("Token address:", tokenAddress);
-    console.log("Token amount:", ethers.formatUnits(amount, 18));
-    console.log("HBAR amount:", ethers.formatUnits(amount, 18));
+    console.log("Token amount:", amountHBAR);
+    console.log("HBAR amount:", amountHBAR);
     console.log("Deadline:", tenMinutesFromNow);
     
     const addLiquidityTx = await router.addLiquidityHBAR(
+        pairAddress,
       tokenAddress,
       amount,
       amount,
-      amount,
+      amountHBAR,
       deployer.address,
       tenMinutesFromNow,
       {
-        value: amount,
-        gasLimit: 3000000
+        value: amountHBAR
       }
     );
 
-    console.log("Transaction hash:", addLiquidityTx.hash);
-    const receipt = await addLiquidityTx.wait();
-    console.log("Transaction receipt:", receipt);
+    await addLiquidityTx.wait();
     console.log("✅ Liquidity added successfully!");
-  } catch (error: any) {
-    console.error("\n🚨 Detailed error information:");
-    if (error.error) {
-      console.error("Error details:", error.error);
-    }
-    if (error.transaction) {
-      console.error("Transaction data:", error.transaction);
-    }
-    if (error.receipt) {
-      console.error("Transaction receipt:", error.receipt);
-    }
-    throw error;
-  }
-} 
+}
