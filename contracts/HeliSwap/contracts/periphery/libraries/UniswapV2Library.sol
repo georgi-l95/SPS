@@ -1,6 +1,7 @@
 pragma solidity >=0.5.0;
 
 import "../../core/interfaces/IUniswapV2Pair.sol";
+import "../../core/interfaces/IUniswapV2Factory.sol";
 import "./SafeMath.sol";
 
 library UniswapV2Library {
@@ -14,7 +15,7 @@ library UniswapV2Library {
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
-    function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
+    function pairFor(address factory, address tokenA, address tokenB) internal view returns (address pair) {
         (address token0, address token1) = sortTokens(tokenA, tokenB);
         pair = address(uint(keccak256(abi.encodePacked(
                 hex'ff',
@@ -22,6 +23,7 @@ library UniswapV2Library {
                 keccak256(abi.encodePacked(token0, token1)),
                 hex'0a654aadc7807be34523402b98553e0f707a58a06c860fb2d4bd34b3fa915264' // init code hash
             ))));
+        pair = IUniswapV2Factory(factory).getPair(token0, token1);
     }
 
     // fetches and sorts the reserves for a pair

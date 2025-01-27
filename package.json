@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deployAndSwap": "npx hardhat run scripts/deployAndSwap.ts --network local"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/georgi-l95/SPS.git"
   },
-  "author": "",
+  "author": "georgi-l95",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/georgi-l95/SPS/issues"

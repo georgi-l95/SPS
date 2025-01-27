@@ -6,6 +6,7 @@ import { deployRouter } from "./steps/4_deployRouter";
 import { createPair } from "./steps/5_createPair";
 import { addLiquidity } from "./steps/6_addLiquidity";
 import { verifySetup } from "./steps/7_verifySetup";
+import { swap } from "./steps/8_swap";
 
 async function main() {
   // Get all signers
@@ -48,7 +49,10 @@ async function main() {
   // Step 7: Add liquidity
   await addLiquidity(usdc, router, usdcAddress, pairAddress, deployer);
 
-  // Step 8: Check pair balances
+  // Step 8: Perform swap HBAR -> USDC
+  await swap(router, whbarAddress, usdcAddress, deployer.address);
+
+  // Check pair balances
   console.log("\n📊 Checking pair balances:");
   const pair = await ethers.getContractAt("UniswapV2Pair", pairAddress);
   const pairTokenBalance = await usdc.balanceOf(pairAddress);
@@ -57,7 +61,11 @@ async function main() {
   console.log("USDC in pair:", ethers.formatUnits(pairTokenBalance, 18));
   console.log("WHBAR in pair:", ethers.formatUnits(pairHBARBalance, 18));
 
-}
+  // Check deployer balances
+  console.log("\n📊 Checking deployer balances:");
+  console.log("USDC in deployer:", ethers.formatUnits(await usdc.balanceOf(deployer.address), 18));
+  console.log("WHBAR in deployer:", ethers.formatUnits(await whbar.balanceOf(deployer.address), 18));
+} 
 
 main()
   .then(() => process.exit(0))
