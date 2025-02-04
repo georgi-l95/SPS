@@ -1,12 +1,13 @@
 import { ethers } from "hardhat";
 import { deployToken } from "./steps/1_deployToken";
-import { deployWHBAR } from "./steps/2_deployWHBAR";
-import { deployFactory } from "./steps/3_deployFactory";
-import { deployRouter } from "./steps/4_deployRouter";
-import { createPair } from "./steps/5_createPair";
-import { addLiquidity } from "./steps/6_addLiquidity";
+import { deployHTSToken } from "./steps/2_deployHTS";
+import { deployWHBAR } from "./steps/3_deployWHBAR";
+import { deployFactory } from "./steps/4_deployFactory";
+import { deployRouter } from "./steps/5_deployRouter";
+import { createPair } from "./steps/6_createPair";
 import { verifySetup } from "./steps/7_verifySetup";
-import { swap } from "./steps/8_swap";
+import { addLiquidity } from "./steps/8_addLiquidity";
+import { swap } from "./steps/9_swap";
 
 async function main() {
   // Get all signers
@@ -17,54 +18,60 @@ async function main() {
   console.log("👤 Account1:", account1.address);
   console.log("👤 Account2:", account2.address);
   
-  // Step 1: Deploy USDC using deployer account
+  // Step 1: Deploy USDC token
   const usdc = await deployToken(deployer);
   const usdcAddress = await usdc.getAddress();
+
+  // Step 2: Deploy HELI token (HTS)
+  const heli = await deployHTSToken(deployer);
+  const heliAddress = await heli.getAddress();
   
-  // Step 2: Deploy WHBAR using deployer account
+  // Step 3: Deploy WHBAR token
   const whbar = await deployWHBAR(deployer);
   const whbarAddress = await whbar.getAddress();
   
-  // Step 3: Deploy UniswapV2Factory
+  // Step 4: Deploy UniswapV2Factory
   const factory = await deployFactory(deployer);
   const factoryAddress = await factory.getAddress();
   
-  // Step 4: Deploy UniswapV2Router02 with factory and WHBAR addresses
+  // Step 5: Deploy UniswapV2Router02
   const router = await deployRouter(
     deployer,
     factoryAddress,
     whbarAddress
   );
   
-  // Step 5: Create WHBAR-USDC pair
-  const pairAddress = await createPair(
+  // Step 6a: Create WHBAR-USDC pair
+  const usdcPairAddress = await createPair(
     factory,
     whbarAddress,
     usdcAddress
   );
 
-  // Step 6: Verify setup
-  await verifySetup(usdc, factory, whbarAddress, usdcAddress, deployer);
-  
-  // Step 7: Add liquidity
-  await addLiquidity(usdc, router, usdcAddress, pairAddress, deployer);
+  // Step 6b: Create WHBAR-HELI pair
+  const heliPairAddress = await createPair(
+    factory,
+    whbarAddress,
+    heliAddress
+  );
 
-  // Step 8: Perform swap HBAR -> USDC
+  // Step 7a: Verify WHBAR-HELI setup
+  await verifySetup(heli, factory, whbarAddress, heliAddress, deployer);
+  
+  // Step 7b: Verify WHBAR-USDC setup
+  await verifySetup(usdc, factory, whbarAddress, usdcAddress, deployer);
+
+  // Step 8a: Add WHBAR-HELI liquidity
+  await addLiquidity(heli, router, heliAddress, heliPairAddress, deployer);
+
+  // Step 8b: Add WHBAR-USDC liquidity
+  await addLiquidity(usdc, router, usdcAddress, usdcPairAddress, deployer);
+
+  // Step 9a: Perform swap HBAR -> USDC
   await swap(router, whbarAddress, usdcAddress, deployer.address);
 
-  // Check pair balances
-  console.log("\n📊 Checking pair balances:");
-  const pair = await ethers.getContractAt("UniswapV2Pair", pairAddress);
-  const pairTokenBalance = await usdc.balanceOf(pairAddress);
-  const pairHBARBalance = await whbar.balanceOf(pairAddress);
-  
-  console.log("USDC in pair:", ethers.formatUnits(pairTokenBalance, 18));
-  console.log("WHBAR in pair:", ethers.formatUnits(pairHBARBalance, 18));
-
-  // Check deployer balances
-  console.log("\n📊 Checking deployer balances:");
-  console.log("USDC in deployer:", ethers.formatUnits(await usdc.balanceOf(deployer.address), 18));
-  console.log("WHBAR in deployer:", ethers.formatUnits(await whbar.balanceOf(deployer.address), 18));
+  // Step 9b: Perform swap HBAR -> HELI
+  await swap(router, whbarAddress, heliAddress, deployer.address);
 } 
 
 main()
